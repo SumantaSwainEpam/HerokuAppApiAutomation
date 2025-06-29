@@ -13,7 +13,10 @@ namespace HerokuAppApiAutomation.Tests
       
         private TokenGenerate Token => CreateClient<TokenGenerate>();
 
-        [Test, Order(1), Description("Valid credentials should return a non-empty token")]
+        [Test]
+        [Order(1)]
+        [Category("Token Generation")]
+        [Description("Valid credentials should return a non-empty token")]
         public void GenerateToken_Should_Return_ValidToken()
         {
             var token = Token.GenerateToken();
