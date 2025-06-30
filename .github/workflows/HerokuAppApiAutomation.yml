@@ -33,4 +33,4 @@ jobs:
 
       # Step 5: Run tests
       - name: Run tests
-        run: dotnet test --filter FullyQualifiedName~HerokuAppApiAutomation.Tests
+        run: dotnet test
