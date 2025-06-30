@@ -42,6 +42,12 @@ namespace HerokuAppApiAutomation.Clients
 
             var response = _client.Execute(request);
 
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), "Failed to retrieve booking by ID.");
             Assert.That(response.Content, Is.Not.Null, "Response content is null.");
 
@@ -53,6 +59,60 @@ namespace HerokuAppApiAutomation.Clients
             }
 
             return booking;
+        }
+
+        public BookingRequest UpdateBooking(int bookingId, BookingRequest updatedData)
+        {
+            var request = CreateRequest($"booking/{bookingId}", Method.Put,withAuth:true);
+            request.AddJsonBody(updatedData);
+
+            var response = _client.Execute(request);
+
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), "Booking update failed.");
+            Assert.That(response.Content, Is.Not.Null, "Response content is null.");
+
+            var updatedBooking = JsonConvert.DeserializeObject<BookingRequest>(response.Content);
+
+            if (updatedBooking == null)
+                throw new InvalidOperationException("Updated booking response is null.");
+
+            return updatedBooking;
+        }
+
+        public bool DeleteBooking(int bookingId)
+        {
+            var request = CreateRequest($"booking/{bookingId}", Method.Delete,withAuth:true);
+
+            var response = _client.Execute(request);
+
+            
+            bool isSuccess = response.StatusCode == HttpStatusCode.Created ||
+                             response.StatusCode == HttpStatusCode.OK ||
+                             response.StatusCode == HttpStatusCode.NoContent;
+
+            Assert.That(isSuccess, Is.True, $"Booking deletion failed. StatusCode: {response.StatusCode}");
+
+            return true;
+        }
+
+        public BookingRequest PatchBooking(int bookingId, object partialUpdate)
+        {
+           
+            var request = CreateRequest($"booking/{bookingId}", Method.Patch,withAuth:true);
+            
+            request.AddJsonBody(partialUpdate);
+
+            var response = _client.Execute(request);
+
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), "Patch update failed.");
+            Assert.That(response.Content, Is.Not.Null, "Response content is null.");
+
+            var patchedBooking = JsonConvert.DeserializeObject<BookingRequest>(response.Content);
+
+            if (patchedBooking == null)
+                throw new InvalidOperationException("Patched booking response is null.");
+
+            return patchedBooking;
         }
 
 

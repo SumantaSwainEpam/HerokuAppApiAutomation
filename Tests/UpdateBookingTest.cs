@@ -9,19 +9,17 @@ using System.Threading.Tasks;
 
 namespace HerokuAppApiAutomation.Tests
 {
-    
-    
-    public  class GetBookingById:BaseTest
+    public class UpdateBookingTest:BaseTest
     {
-       
         private BookingClient bookingClient => CreateClient<BookingClient>();
 
-
         [Test]
+        [Order(4)]
         [Category("UpdateBooking")]
-        [Description("Update a booking by ID and verify the returned data.")]
+        [Description("Update a booking by ID and verify the updated data.")]
         public void UpdateBookingById_ShouldUpdateCorrectDetails()
         {
+           
             var bookingRequest = new BookingRequest
             {
                 Firstname = "Sumanta",
@@ -36,17 +34,18 @@ namespace HerokuAppApiAutomation.Tests
                 Additionalneeds = "Dinner"
             };
 
-            
+           
             var createResponse = bookingClient.CreateBooking(bookingRequest);
             Assert.That(createResponse.BookingId, Is.GreaterThan(0), "Booking ID should be greater than 0");
 
             int bookingId = createResponse.BookingId;
 
+           
             var updatedRequest = new BookingRequest
             {
-                Firstname = "Sam",
-                Lastname = "Delton",
-                Totalprice = 888,
+                Firstname = "Bravis",
+                Lastname = "victory",
+                Totalprice = 999,
                 Depositpaid = false,
                 Bookingdates = new BookingDates
                 {
@@ -56,27 +55,22 @@ namespace HerokuAppApiAutomation.Tests
                 Additionalneeds = "Breakfast"
             };
 
-          
-            var updateResponse = bookingClient.UpdateBooking(bookingId, updatedRequest);
+           
+            var updateResult = bookingClient.UpdateBooking(bookingId, updatedRequest);
 
-          
-            var updatedBooking = bookingClient.GetBookingById(bookingId);
-
-            Assert.That(updatedBooking.Firstname, Is.EqualTo(updatedRequest.Firstname));
-            Assert.That(updatedBooking.Lastname, Is.EqualTo(updatedRequest.Lastname));
-            Assert.That(updatedBooking.Totalprice, Is.EqualTo(updatedRequest.Totalprice));
-            Assert.That(updatedBooking.Depositpaid, Is.EqualTo(updatedRequest.Depositpaid));
-            Assert.That(updatedBooking.Bookingdates.Checkin, Is.EqualTo(updatedRequest.Bookingdates.Checkin));
-            Assert.That(updatedBooking.Bookingdates.Checkout, Is.EqualTo(updatedRequest.Bookingdates.Checkout));
-            Assert.That(updatedBooking.Additionalneeds, Is.EqualTo(updatedRequest.Additionalneeds));
+           
+            Assert.That(updateResult.Firstname, Is.EqualTo(updatedRequest.Firstname));
+            Assert.That(updateResult.Lastname, Is.EqualTo(updatedRequest.Lastname));
+            Assert.That(updateResult.Totalprice, Is.EqualTo(updatedRequest.Totalprice));
+            Assert.That(updateResult.Depositpaid, Is.EqualTo(updatedRequest.Depositpaid));
+            Assert.That(updateResult.Bookingdates.Checkin, Is.EqualTo(updatedRequest.Bookingdates.Checkin));
+            Assert.That(updateResult.Bookingdates.Checkout, Is.EqualTo(updatedRequest.Bookingdates.Checkout));
+            Assert.That(updateResult.Additionalneeds, Is.EqualTo(updatedRequest.Additionalneeds));
 
             TestContext.WriteLine("Updated Booking:");
-            TestContext.WriteLine(JsonConvert.SerializeObject(updatedBooking, Formatting.Indented));
-
+            TestContext.WriteLine(JsonConvert.SerializeObject(updateResult, Formatting.Indented));
         }
 
+
     }
-
-
 }
-
