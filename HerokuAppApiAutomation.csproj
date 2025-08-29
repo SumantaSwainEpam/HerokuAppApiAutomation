@@ -27,9 +27,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <XamlAppDef Include="Credentials\AppSettings.json">
+	  <Content Include="Credentials\AppSettings.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </XamlAppDef>
+	  </Content>
 	</ItemGroup>
 
 </Project>
