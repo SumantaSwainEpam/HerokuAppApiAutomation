@@ -23,8 +23,13 @@
     <Using Include="NUnit.Framework" />
   </ItemGroup>
 
-	<ItemGroup>
+	<!--<ItemGroup>
 		<None Update="Credentials\**\*">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>-->
+	<ItemGroup>
+		<None Update="Credentials\AppSettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
