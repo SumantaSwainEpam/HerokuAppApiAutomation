@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - master
-  # Uncomment if you want to run on PRs too
-  # pull_request:
-  #   branches:
-  #     - master
 
 jobs:
   build-and-test:
@@ -30,8 +26,14 @@ jobs:
           mkdir -p Credentials
           echo '${{ secrets.APPSETTINGS_JSON }}' > Credentials/AppSettings.json
 
+      - name: List contents of Credentials
+        run: ls -l Credentials
+
       - name: Build solution
         run: dotnet build --no-restore --configuration Release
+
+      - name: List contents of output Credentials folder
+        run: ls -l ./bin/Release/net8.0/Credentials || echo "Not found"
 
       - name: Run tests
         run: dotnet test --no-build --configuration Release
