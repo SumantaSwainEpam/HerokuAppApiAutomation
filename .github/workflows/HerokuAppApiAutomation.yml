@@ -28,5 +28,10 @@ jobs:
       - name: Build solution
         run: dotnet build --no-restore --configuration Release
 
+      - name: Create AppSettings.json from secret
+        run: |
+          mkdir -p Credentials
+          echo '${{ secrets.APPSETTINGS_JSON }}' > Credentials/AppSettings.json
+
       - name: Run tests
         run: dotnet test --no-build --configuration Release
