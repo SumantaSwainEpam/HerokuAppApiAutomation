@@ -9,10 +9,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="Credentials\AppSettings.json" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="coverlet.collector" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
@@ -27,9 +23,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="Credentials/AppSettings.json">
+		<Content Include="Credentials\AppSettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
+		</Content>
 	</ItemGroup>
 
 </Project>
