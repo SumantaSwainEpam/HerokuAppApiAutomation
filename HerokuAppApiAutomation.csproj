@@ -29,7 +29,7 @@
 		</None>
 	</ItemGroup>-->
 	<ItemGroup>
-		<None Update="Credentials/AppSettings.json">
+		<None Update="Credentials//AppSettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
