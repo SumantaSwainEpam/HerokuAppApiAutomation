@@ -1,64 +1,54 @@
-﻿using HerokuAppApiAutomation.Clients;
+using HerokuAppApiAutomation.Clients;
+using HerokuAppApiAutomation.Helpers;
 using HerokuAppApiAutomation.Models;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net;
 
 namespace HerokuAppApiAutomation.Tests
 {
-    public class UpdateBookingTest:BaseTest
+    [TestFixture]
+    public class UpdateBookingTest : BaseTest
     {
-        private BookingClient bookingClient => CreateClient<BookingClient>();
+        private BookingClient _bookingClient;
+        private int _bookingId;
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            _bookingClient = CreateClient<BookingClient>();
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            var created = _bookingClient.CreateBooking(BookingRequestBuilder.Build());
+            _bookingId = created.BookingId;
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (_bookingId > 0)
+            {
+                _bookingClient.DeleteBooking(_bookingId);
+                _bookingId = 0;
+            }
+        }
 
         [Test]
-        [Order(4)]
         [Category("UpdateBooking")]
-        [Description("Update a booking by ID and verify the updated data.")]
-        public void UpdateBookingById_ShouldUpdateCorrectDetails()
+        [Description("Full update of a booking should persist all changed fields.")]
+        public void UpdateBooking_ShouldUpdateAllFields()
         {
-           
-            var bookingRequest = new BookingRequest
-            {
-                Firstname = "Sumanta",
-                Lastname = "Swain",
-                Totalprice = 521,
-                Depositpaid = true,
-                Bookingdates = new BookingDates
-                {
-                    Checkin = "2020-11-09",
-                    Checkout = "2022-05-07"
-                },
-                Additionalneeds = "Dinner"
-            };
+            var updatedRequest = BookingRequestBuilder.Build(
+                firstname: "Bravis",
+                lastname: "Victory",
+                totalprice: 999,
+                depositpaid: false,
+                additionalneeds: "Breakfast");
 
-           
-            var createResponse = bookingClient.CreateBooking(bookingRequest);
-            Assert.That(createResponse.BookingId, Is.GreaterThan(0), "Booking ID should be greater than 0");
+            var updateResult = _bookingClient.UpdateBooking(_bookingId, updatedRequest);
 
-            int bookingId = createResponse.BookingId;
-
-           
-            var updatedRequest = new BookingRequest
-            {
-                Firstname = "Bravis",
-                Lastname = "victory",
-                Totalprice = 999,
-                Depositpaid = false,
-                Bookingdates = new BookingDates
-                {
-                    Checkin = "2024-01-01",
-                    Checkout = "2024-12-31"
-                },
-                Additionalneeds = "Breakfast"
-            };
-
-           
-            var updateResult = bookingClient.UpdateBooking(bookingId, updatedRequest);
-
-           
             Assert.That(updateResult.Firstname, Is.EqualTo(updatedRequest.Firstname));
             Assert.That(updateResult.Lastname, Is.EqualTo(updatedRequest.Lastname));
             Assert.That(updateResult.Totalprice, Is.EqualTo(updatedRequest.Totalprice));
@@ -71,6 +61,16 @@ namespace HerokuAppApiAutomation.Tests
             TestContext.WriteLine(JsonConvert.SerializeObject(updateResult, Formatting.Indented));
         }
 
+        [Test]
+        [Category("UpdateBooking")]
+        [Description("Update without auth token should return 403 Forbidden.")]
+        public void UpdateBooking_WithoutAuth_ShouldReturn403()
+        {
+            var updatedRequest = BookingRequestBuilder.Build(firstname: "Unauthorized");
+            var response = _bookingClient.ExecuteUpdateBooking(_bookingId, updatedRequest, withAuth: false);
 
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden),
+                "Update without auth should return 403 Forbidden.");
+        }
     }
 }

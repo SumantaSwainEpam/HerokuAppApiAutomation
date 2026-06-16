@@ -1,50 +1,60 @@
-﻿using HerokuAppApiAutomation.Clients;
-using HerokuAppApiAutomation.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using HerokuAppApiAutomation.Clients;
+using HerokuAppApiAutomation.Helpers;
+using System.Net;
 
 namespace HerokuAppApiAutomation.Tests
 {
-    public class DeleteBookingTest:BaseTest
+    [TestFixture]
+    public class DeleteBookingTest : BaseTest
     {
+        private BookingClient _bookingClient;
 
-        private BookingClient bookingClient => CreateClient<BookingClient>();
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            _bookingClient = CreateClient<BookingClient>();
+        }
 
         [Test]
         [Category("DeleteBooking")]
-        [Description("Delete a booking by ID and verify it is removed.")]
-        public void DeleteBookingById_ShouldDeleteSuccessfully()
+        [Description("Delete a booking by ID and verify it is no longer retrievable.")]
+        public void DeleteBooking_ShouldRemoveBookingPermanently()
         {
-            var bookingRequest = new BookingRequest
-            {
-                Firstname = "Smith",
-                Lastname = "Hock",
-                Totalprice = 321,
-                Depositpaid = true,
-                Bookingdates = new BookingDates
-                {
-                    Checkin = "2021-06-01",
-                    Checkout = "2021-06-10"
-                },
-                Additionalneeds = "Lunch"
-            };
+            var created = _bookingClient.CreateBooking(BookingRequestBuilder.Build(
+                firstname: "Smith",
+                lastname: "Hock",
+                totalprice: 321,
+                additionalneeds: "Lunch"));
 
-            var createResponse = bookingClient.CreateBooking(bookingRequest);
-            int bookingId = createResponse.BookingId;
+            int bookingId = created.BookingId;
 
-            var deleteSuccess = bookingClient.DeleteBooking(bookingId);
+            var deleteSuccess = _bookingClient.DeleteBooking(bookingId);
             Assert.That(deleteSuccess, Is.True, "Booking should be deleted successfully.");
 
-            var deletedBooking = bookingClient.GetBookingById(bookingId);
+            var deletedBooking = _bookingClient.GetBookingById(bookingId);
             Assert.That(deletedBooking, Is.Null, "Booking should not exist after deletion.");
 
             TestContext.WriteLine($"Booking with ID {bookingId} was successfully deleted.");
-
         }
 
+        [Test]
+        [Category("DeleteBooking")]
+        [Description("Delete without auth token should return 403 Forbidden.")]
+        public void DeleteBooking_WithoutAuth_ShouldReturn403()
+        {
+            var created = _bookingClient.CreateBooking(BookingRequestBuilder.Build());
+            int bookingId = created.BookingId;
 
+            try
+            {
+                var response = _bookingClient.ExecuteDeleteBooking(bookingId, withAuth: false);
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden),
+                    "Delete without auth should return 403 Forbidden.");
+            }
+            finally
+            {
+                _bookingClient.DeleteBooking(bookingId);
+            }
+        }
     }
 }

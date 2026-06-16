@@ -1,9 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HerokuAppApiAutomation.Models
 {
@@ -14,6 +9,11 @@ namespace HerokuAppApiAutomation.Models
 
         [JsonProperty("booking")]
         public BookingRequest Booking { get; set; }
+    }
 
+    public class BookingIdResponse
+    {
+        [JsonProperty("bookingid")]
+        public int BookingId { get; set; }
     }
 }

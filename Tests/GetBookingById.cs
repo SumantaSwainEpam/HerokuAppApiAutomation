@@ -1,82 +1,70 @@
-﻿using HerokuAppApiAutomation.Clients;
+using HerokuAppApiAutomation.Clients;
+using HerokuAppApiAutomation.Helpers;
 using HerokuAppApiAutomation.Models;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HerokuAppApiAutomation.Tests
 {
-    
-    
-    public  class GetBookingById:BaseTest
+    [TestFixture]
+    public class GetBookingTest : BaseTest
     {
-       
-        private BookingClient bookingClient => CreateClient<BookingClient>();
+        private BookingClient _bookingClient;
+        private int _bookingId;
+        private BookingRequest _createdRequest;
 
-
-        [Test]
-        [Category("UpdateBooking")]
-        [Description("Update a booking by ID and verify the returned data.")]
-        public void UpdateBookingById_ShouldUpdateCorrectDetails()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
-            var bookingRequest = new BookingRequest
-            {
-                Firstname = "Sumanta",
-                Lastname = "Swain",
-                Totalprice = 521,
-                Depositpaid = true,
-                Bookingdates = new BookingDates
-                {
-                    Checkin = "2020-11-09",
-                    Checkout = "2022-05-07"
-                },
-                Additionalneeds = "Dinner"
-            };
-
-            
-            var createResponse = bookingClient.CreateBooking(bookingRequest);
-            Assert.That(createResponse.BookingId, Is.GreaterThan(0), "Booking ID should be greater than 0");
-
-            int bookingId = createResponse.BookingId;
-
-            var updatedRequest = new BookingRequest
-            {
-                Firstname = "Sam",
-                Lastname = "Delton",
-                Totalprice = 888,
-                Depositpaid = false,
-                Bookingdates = new BookingDates
-                {
-                    Checkin = "2024-01-01",
-                    Checkout = "2024-12-31"
-                },
-                Additionalneeds = "Breakfast"
-            };
-
-          
-            var updateResponse = bookingClient.UpdateBooking(bookingId, updatedRequest);
-
-          
-            var updatedBooking = bookingClient.GetBookingById(bookingId);
-
-            Assert.That(updatedBooking.Firstname, Is.EqualTo(updatedRequest.Firstname));
-            Assert.That(updatedBooking.Lastname, Is.EqualTo(updatedRequest.Lastname));
-            Assert.That(updatedBooking.Totalprice, Is.EqualTo(updatedRequest.Totalprice));
-            Assert.That(updatedBooking.Depositpaid, Is.EqualTo(updatedRequest.Depositpaid));
-            Assert.That(updatedBooking.Bookingdates.Checkin, Is.EqualTo(updatedRequest.Bookingdates.Checkin));
-            Assert.That(updatedBooking.Bookingdates.Checkout, Is.EqualTo(updatedRequest.Bookingdates.Checkout));
-            Assert.That(updatedBooking.Additionalneeds, Is.EqualTo(updatedRequest.Additionalneeds));
-
-            TestContext.WriteLine("Updated Booking:");
-            TestContext.WriteLine(JsonConvert.SerializeObject(updatedBooking, Formatting.Indented));
-
+            _bookingClient = CreateClient<BookingClient>();
+            _createdRequest = BookingRequestBuilder.Build(firstname: "James", lastname: "Brown", totalprice: 250);
+            var created = _bookingClient.CreateBooking(_createdRequest);
+            _bookingId = created.BookingId;
         }
 
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            if (_bookingId > 0)
+                _bookingClient.DeleteBooking(_bookingId);
+        }
+
+        [Test]
+        [Category("Booking")]
+        [Description("Get a booking by ID and verify all fields match the created data.")]
+        public void GetBookingById_ShouldReturnCorrectDetails()
+        {
+            var booking = _bookingClient.GetBookingById(_bookingId);
+
+            Assert.That(booking, Is.Not.Null, "Booking should not be null.");
+            Assert.That(booking!.Firstname, Is.EqualTo(_createdRequest.Firstname));
+            Assert.That(booking.Lastname, Is.EqualTo(_createdRequest.Lastname));
+            Assert.That(booking.Totalprice, Is.EqualTo(_createdRequest.Totalprice));
+            Assert.That(booking.Depositpaid, Is.EqualTo(_createdRequest.Depositpaid));
+            Assert.That(booking.Bookingdates.Checkin, Is.EqualTo(_createdRequest.Bookingdates.Checkin));
+            Assert.That(booking.Bookingdates.Checkout, Is.EqualTo(_createdRequest.Bookingdates.Checkout));
+            Assert.That(booking.Additionalneeds, Is.EqualTo(_createdRequest.Additionalneeds));
+
+            TestContext.WriteLine(JsonConvert.SerializeObject(booking, Formatting.Indented));
+        }
+
+        [Test]
+        [Category("Booking")]
+        [Description("Get all bookings should return a non-empty list containing the created booking.")]
+        public void GetAllBookings_ShouldReturnListContainingCreatedBooking()
+        {
+            var ids = _bookingClient.GetAllBookingIds();
+
+            Assert.That(ids, Is.Not.Null.And.Not.Empty, "Booking IDs list should not be empty.");
+            Assert.That(ids, Contains.Item(_bookingId), "Created booking ID should be in the list.");
+        }
+
+        [Test]
+        [Category("Booking")]
+        [Description("Get a booking with a non-existent ID should return null (404).")]
+        public void GetBookingById_WithNonExistentId_ShouldReturnNull()
+        {
+            var booking = _bookingClient.GetBookingById(int.MaxValue);
+            Assert.That(booking, Is.Null, "Non-existent booking ID should return null.");
+        }
     }
-
-
 }
-
