@@ -1,4 +1,4 @@
-# HerokuAppApiAutomation
+# Heroku App Api Automation
 
 API test automation suite for the [Restful Booker](https://restful-booker.herokuapp.com) API, built with .NET 8, NUnit 3, and RestSharp.
 
@@ -81,3 +81,9 @@ HerokuAppApiAutomation/
 ## CI/CD
 
 GitHub Actions workflow (`.github/workflows/HerokuAppApiAutomation.yml`) runs on every push to `master`. The `APPSETTINGS_JSON` secret must be configured in repository Settings → Secrets.
+
+## Author
+
+**Sumanta Swain**
+- Email: sumanta_swain@epam.com
+- GitHub: [@SumantaSwainEpam](https://github.com/SumantaSwainEpam)
